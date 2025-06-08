@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Login - AquaMaster</title>
+    <link rel="icon" href="media/LogoS.png" type="image/x-icon">
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', sans-serif;
+            background-color: #1c1c2e;
+            color: #fff;
+            display: flex;
+            height: 100vh;
+        }
+        
+        .container {
+            display: flex;
+            width: 100%;
+            height: 100%;
+        }
+        
+        .left-panel {
+            flex: 1;
+            background-color: #1c1c2e;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+            margin-left: 5%;
+        }
+        
+        .left-panel img {
+            width: 100%;
+            height: 70%;
+            object-fit: cover;
+            border-radius: 5%;
+        }
+        
+        .right-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 40px;
+            background-color: #1c1c2e;
+            width: 30%;
+        }
+        
+        .right-panel h2 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+        
+        .right-panel p {
+            font-size: 14px;
+            margin-bottom: 30px;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+            width: 100%;
+        }
+        
+        .form-group input {
+            width: 300px;
+            padding: 10px;
+            border: none;
+            border-radius: 6px;
+            background-color: #2e2e42;
+            color: #fff;
+        }
+        
+        .form-group input:focus {
+            outline: none;
+            box-shadow: 0 0 0 2px #8a2be2;
+        }
+        
+        .btn-login {
+            width: 320px;
+            padding: 12px;
+            background-color: #8a2be2;
+            border: none;
+            border-radius: 6px;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+        
+        .btn-login:hover {
+            background-color: #6c1cb7;
+        }
+        
+        .redirect-text {
+            margin-top: 15px;
+        }
+        
+        .redirect-text a {
+            color: #8a2be2;
+            text-decoration: none;
+        }
+        
+        .redirect-text a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="left-panel">
+            <img src="https://i.ibb.co/PvZmLF0H/Chat-GPT-Image-May-23-2025-04-41-17-PM.png" alt="Login image" id="loginImage" />
+        </div>
+
+        <div class="right-panel">
+            <h2>Welcome Back</h2>
+            <p>Please login to access your aquarium</p>
+            <form id="login-form">
+                <div class="form-group">
+                    <input type="email" id="email" placeholder="Email" required />
+                </div>
+                <div class="form-group">
+                    <input type="password" id="password" placeholder="Password" required />
+                </div>
+                <button type="submit" class="btn-login">Login</button>
+            </form>
+            <div class="redirect-text">
+                <p>Don't have an account? <a href="/register.html">Register here</a></p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const NODE_JS_BACKEND_URL = "http://192.168.2.94:3000";
+
+        async function verifyToken(token) {
+            if (!token) return null;
+
+            try {
+                const response = await fetch(`${NODE_JS_BACKEND_URL}/api/verify-token`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) return null;
+
+                const data = await response.json();
+                return data && data.username ? data.username : null;
+            } catch (error) {
+                return null;
+            }
+        }
+
+        // Auto-redirect if already logged in
+        (async() => {
+            const token = localStorage.getItem('token');
+            const username = await verifyToken(token);
+            if (username) {
+                window.location.href = '/homepage.html';
+            }
+        })();
+
+        document.getElementById('login-form').addEventListener('submit', async(e) => {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            try {
+                const response = await fetch(`${NODE_JS_BACKEND_URL}/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        email,
+                        password
+                    })
+                });
+
+                if (!response.ok) {
+                    alert("Login failed");
+                    return;
+                }
+
+                const data = await response.json();
+                localStorage.setItem('token', data.token);
+                window.location.href = '/homepage.html';
+            } catch (err) {
+                alert("Error logging in");
+            }
+        });
+
+        // You can set the image dynamically if needed
+        document.getElementById('loginImage').src = "https://i.ibb.co/PvZmLF0H/Chat-GPT-Image-May-23-2025-04-41-17-PM.png"; // Replace with actual image
+    </script>
+</body>
+
+</html>

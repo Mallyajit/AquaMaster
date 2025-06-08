@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Create an Account</title>
+    <link rel="icon" href="media/LogoS.png" type="image/x-icon">
+    <link rel="stylesheet" href="style3.css">
+</head>
+
+<body>
+    <img src="media/Logobgremove.png" , class="logo">
+    <div class="container">
+        <!-- Left Panel with Sliding Images -->
+        <div class="left-panel">
+            <img class="slider-image" id="slide1" src="https://i.ibb.co/Q3T46Sb4/Chat-GPT-Image-May-23-2025-08-44-13-PM.png" alt="Slide 1" style="opacity: 1;">
+            <img class="slider-image" id="slide2" src="https://i.ibb.co/dw0WTjxY/Chat-GPT-Image-May-23-2025-04-41-17-PM.png" alt="Slide 2" style="opacity: 0;">
+            <img class="slider-image" id="slide3" src="https://i.ibb.co/LzLDzjpW/Chat-GPT-Image-May-23-2025-04-40-32-PM.png" alt="Slide 3" style="opacity: 0;">
+        </div>
+
+        <!-- Right Panel with Registration Form -->
+        <div class="right-panel">
+            <h2>Create an account</h2>
+            <p class="small-text">Already have an account? <a href="/login.html">Log in</a></p>
+            <form id="register-form">
+                <div class="name-fields">
+                    <input type="text" id="firstName" placeholder="First name" required />
+                    <input type="text" id="lastName" placeholder="Last name" required />
+                </div>
+                <input type="email" id="email" placeholder="Email address" required />
+                <input type="password" id="password" placeholder="Password" required />
+                <div class="checkbox-group">
+                    <input type="checkbox" required />
+                    <label for="terms" class="small-text">I agree to the Terms & Conditions</label>
+                </div>
+                <button type="submit">Create account</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Image Slider Logic (3s interval)
+        const images = [
+            document.getElementById("slide1"),
+            document.getElementById("slide2"),
+            document.getElementById("slide3")
+        ];
+        let current = 0;
+        setInterval(() => {
+            images[current].style.opacity = 0;
+            current = (current + 1) % images.length;
+            images[current].style.opacity = 1;
+        }, 3000);
+
+        // Registration Logic
+        document.getElementById('register-form').addEventListener('submit', async(e) => {
+            e.preventDefault();
+            const firstName = document.getElementById('firstName').value.trim();
+            const lastName = document.getElementById('lastName').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value;
+
+            try {
+                const response = await fetch('http://192.168.2.94:3000/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        firstName,
+                        lastName,
+                        email,
+                        password
+                    })
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    alert(error.message || "Registration failed");
+                    return;
+                }
+
+                alert("Registration successful! You can now log in.");
+                window.location.href = '/login.html';
+            } catch (err) {
+                alert("Error registering user");
+            }
+        });
+    </script>
+</body>
+
+</html>

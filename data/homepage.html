@@ -1,0 +1,74 @@
+<html>
+
+<head>
+    <title>Aquamaster</title>
+    <link rel="icon" href="media/LogoS.png" type="image/x-icon">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="banner">
+
+        <div>
+            <img src="media/Logobgremove.png" , class="logo">
+        </div>
+
+        <div id="welcometxt">
+            <h2 id="welcome-message"></h2>
+        </div>
+
+        <div class="list1">
+            <ul>
+                <li><a href="Lights.html">Lights</a></li>
+                <li><a href="#">Filter</a></li>
+                <li><a href="#">Presets</a></li>
+                <li><a href="#">Timer</a></li>
+            </ul>
+        </div>
+        <div class="content">
+            <h1>AQUAMASTER</h1>
+            <h3>Master Controller of Your Aquarium</h3>
+            <p>
+                All controls can be accessed from the options above<br> Feel free to explore the options and facilities available<br>
+            </p>
+        </div>
+    </div>
+
+    <script>
+        async function verifyToken(token) {
+            try {
+                const response = await fetch('http://192.168.2.94:3000/api/verify-token', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (!response.ok) return null;
+
+                const data = await response.json();
+                return data.firstName; // Return username if token is valid
+            } catch (error) {
+                console.error('Token verification failed:', error);
+                return null;
+            }
+        }
+
+        (async() => {
+            const token = localStorage.getItem('token');
+            const firstName = await verifyToken(token);
+
+            if (!firstName) {
+                window.location.href = '/login.html'; // Redirect if not logged in
+            } else {
+                const messageEl = document.getElementById('welcome-message');
+                messageEl.textContent = `Welcome, ${firstName}!`;
+            }
+        })();
+    </script>
+
+
+</body>
+
+</html>
