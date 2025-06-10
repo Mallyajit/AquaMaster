@@ -1,0 +1,274 @@
+const ESP32_IP = "http://192.168.2.69"; // Replace with your ESP32 IP
+const NODE_JS_BACKEND_URL = "http://192.168.1.13:3000"; // Your Node.js backend IP
+
+const colorPicker = new iro.ColorPicker("#colorWheel", {
+  width: 250,
+  color: "#ffffff",
+});
+
+colorPicker.on("color:change", function (color) {
+  const hex = color.hexString;
+  document.getElementById("colorPreview").style.backgroundColor = hex;
+});
+
+// Load saved settings from backend on page load
+window.addEventListener("load", () => {
+  const token = localStorage.getItem("token");
+  if (!token) {
+    window.location.href = "login.html";
+    return;
+  }
+
+  fetch(`${NODE_JS_BACKEND_URL}/settings`, {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  })
+    .then((res) => {
+      if (!res.ok) {
+        if (res.status === 401 || res.status === 403) {
+          console.error(
+            "Authentication failed for settings. Redirecting to login."
+          );
+          localStorage.removeItem("token");
+          window.location.href = "login.html";
+        }
+        throw new Error(`Failed to load settings: ${res.status}`);
+      }
+      return res.json();
+    })
+    .then((settings) => {
+      const { r, g, b, brightness } = settings;
+      if (r !== undefined && g !== undefined && b !== undefined) {
+        colorPicker.color.rgb = {
+          r,
+          g,
+          b,
+        };
+        document.getElementById(
+          "colorPreview"
+        ).style.backgroundColor = `rgb(${r}, ${g}, ${b})`;
+      }
+
+      if (brightness !== undefined) {
+        document.getElementById("brightnessSlider").value = brightness;
+      }
+    })
+    .catch((err) => {
+      console.error("❌ Error loading settings:", err);
+    });
+});
+
+// New: check if auto daylight is enabled
+function isAutoDaylightEnabled() {
+  const toggle = document.getElementById("autoDaylightToggle");
+  return toggle && toggle.checked;
+}
+
+// Apply color to ESP32 and save to server
+async function applyColor() {
+  const brightness = parseInt(
+    document.getElementById("brightnessSlider").value
+  );
+
+  if (isAutoDaylightEnabled()) {
+    try {
+      const response = await fetch(`${NODE_JS_BACKEND_URL}/api/auto-light`);
+      if (!response.ok) throw new Error("Failed to get auto-light color");
+      const { r, g, b } = await response.json();
+
+      const adjustedRgb = {
+        r: Math.round((r * brightness) / 255),
+        g: Math.round((g * brightness) / 255),
+        b: Math.round((b * brightness) / 255),
+      };
+
+      //auto-update colour in daylight mode
+      let autoUpdateInterval = setInterval(() => {
+        if (isAutoDaylightEnabled()) {
+          applyColor();
+        }
+      }, 5 * 60 * 1000);
+
+      window.addEventListener("beforeunload", () => {
+        clearInterval(autoUpdateInterval);
+      });
+
+      // Update colorPreview for UI
+      document.getElementById(
+        "colorPreview"
+      ).style.backgroundColor = `rgb(${adjustedRgb.r}, ${adjustedRgb.g}, ${adjustedRgb.b})`;
+
+      // Send calculated color to ESP32 only (do not overwrite manual settings on backend)
+      await sendToESP32(adjustedRgb);
+    } catch (err) {
+      console.error("❌ Auto-light error:", err);
+    }
+  } else {
+    // Manual mode
+    const rgb = colorPicker.color.rgb;
+    await sendColorAndBrightness(rgb, brightness);
+  }
+}
+
+async function sendToESP32(adjustedRgb) {
+  try {
+    const response = await fetch(`${ESP32_IP}/setcolor`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(adjustedRgb),
+    });
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error(
+        "❌ Failed to send color to ESP32:",
+        response.status,
+        errorText
+      );
+    } else {
+      console.log("✅ Auto-light color sent to ESP32");
+    }
+  } catch (error) {
+    console.error("❌ Network error while sending color to ESP32:", error);
+  }
+}
+
+async function sendColorAndBrightness(originalRgb, originalBrightness) {
+  const adjustedRgbForESP32 = {
+    r: Math.round((originalRgb.r * originalBrightness) / 255),
+    g: Math.round((originalRgb.g * originalBrightness) / 255),
+    b: Math.round((originalRgb.b * originalBrightness) / 255),
+  };
+
+  const dataToESP32 = {
+    r: adjustedRgbForESP32.r,
+    g: adjustedRgbForESP32.g,
+    b: adjustedRgbForESP32.b,
+  };
+
+  try {
+    const espResponse = await fetch(`${ESP32_IP}/setcolor`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(dataToESP32),
+    });
+
+    if (!espResponse.ok) {
+      const errorText = await espResponse.text();
+      console.error(
+        "❌ Failed to send color to ESP32:",
+        espResponse.status,
+        errorText
+      );
+    } else {
+      console.log("✅ Color sent successfully to ESP32!");
+    }
+  } catch (error) {
+    console.error("❌ Network error while sending color to ESP32:", error);
+  }
+
+  // Save to backend
+  const dataToBackend = {
+    r: originalRgb.r,
+    g: originalRgb.g,
+    b: originalRgb.b,
+    brightness: parseInt(originalBrightness),
+  };
+
+  try {
+    const token = localStorage.getItem("token");
+    const backendResponse = await fetch(`${NODE_JS_BACKEND_URL}/settings`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(dataToBackend),
+    });
+
+    if (!backendResponse.ok) {
+      const errorText = await backendResponse.text();
+      console.error(
+        "❌ Failed to update user settings:",
+        backendResponse.status,
+        errorText
+      );
+    } else {
+      console.log("✅ User settings saved to server.");
+    }
+  } catch (error) {
+    console.error("❌ Network error while updating server settings:", error);
+  }
+}
+
+// Preset color modes
+function setMode(mode) {
+  let rgb, brightness;
+
+  switch (mode) {
+    case "Guest":
+      rgb = {
+        r: 255,
+        g: 200,
+        b: 150,
+      };
+      brightness = 180;
+      break;
+    case "Night":
+      rgb = {
+        r: 20,
+        g: 20,
+        b: 60,
+      };
+      brightness = 80;
+      break;
+    case "Day":
+      rgb = {
+        r: 255,
+        g: 255,
+        b: 255,
+      };
+      brightness = 255;
+      break;
+    case "Aesthetic":
+      rgb = {
+        r: 150,
+        g: 0,
+        b: 200,
+      };
+      brightness = 160;
+      break;
+    case "Plant":
+      rgb = {
+        r: 180,
+        g: 255,
+        b: 180,
+      };
+      brightness = 200;
+      break;
+    case "Plant+":
+      rgb = {
+        r: 255,
+        g: 120,
+        b: 50,
+      };
+      brightness = 255;
+      break;
+    default:
+      console.warn(`Unknown mode: ${mode}`);
+      return;
+  }
+
+  colorPicker.color.rgb = rgb;
+  document.getElementById("brightnessSlider").value = brightness;
+  document.getElementById(
+    "colorPreview"
+  ).style.backgroundColor = `rgb(${rgb.r}, ${rgb.g}, ${rgb.b})`;
+
+  sendColorAndBrightness(rgb, brightness);
+}

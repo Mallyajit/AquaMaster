@@ -4,6 +4,7 @@
     <title>Aquamaster</title>
     <link rel="icon" href="media/LogoS.png" type="image/x-icon">
     <link rel="stylesheet" href="style.css">
+
 </head>
 
 <body>
@@ -33,42 +34,7 @@
             </p>
         </div>
     </div>
-
-    <script>
-        async function verifyToken(token) {
-            try {
-                const response = await fetch('http://192.168.2.94:3000/api/verify-token', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    }
-                });
-
-                if (!response.ok) return null;
-
-                const data = await response.json();
-                return data.firstName; // Return username if token is valid
-            } catch (error) {
-                console.error('Token verification failed:', error);
-                return null;
-            }
-        }
-
-        (async() => {
-            const token = localStorage.getItem('token');
-            const firstName = await verifyToken(token);
-
-            if (!firstName) {
-                window.location.href = '/login.html'; // Redirect if not logged in
-            } else {
-                const messageEl = document.getElementById('welcome-message');
-                messageEl.textContent = `Welcome, ${firstName}!`;
-            }
-        })();
-    </script>
-
-
+    <script src="homepagejs.js"></script>
 </body>
 
 </html>
