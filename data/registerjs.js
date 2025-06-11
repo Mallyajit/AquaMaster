@@ -22,7 +22,7 @@ document
     const password = document.getElementById("password").value;
 
     try {
-      const response = await fetch("http://192.168.1.13:3000/register", {
+      const response = await fetch("http://192.168.1.22:3000/register", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

@@ -1,5 +1,5 @@
 console.log("Loginjs loaded");
-const NODE_JS_BACKEND_URL = "http://192.168.1.13:3000";
+const NODE_JS_BACKEND_URL = "http://192.168.1.22:3000";
 
 async function verifyToken(token) {
   if (!token) return null;

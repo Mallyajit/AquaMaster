@@ -1,6 +1,6 @@
 async function verifyToken(token) {
   try {
-    const response = await fetch("http://192.168.1.13:3000/api/verify-token", {
+    const response = await fetch("http://192.168.1.22:3000/api/verify-token", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
