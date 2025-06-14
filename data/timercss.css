@@ -1,0 +1,169 @@
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    background-color: #f0f2f5;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+}
+
+.container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 40px;
+    background: #fff;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    width: 90%;
+    max-width: 1000px;
+}
+
+.clock-container {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-width: 280px;
+}
+
+.clock {
+    width: 250px;
+    height: 250px;
+    border-radius: 50%;
+    position: relative;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: #e9e9e9;
+}
+
+.clock::before {
+    content: '';
+    position: absolute;
+    top: 25px;
+    left: 25px;
+    right: 25px;
+    bottom: 25px;
+    background: #fff;
+    border-radius: 50%;
+    z-index: 1;
+}
+
+.time-marker {
+    position: absolute;
+    font-size: 12px;
+    font-weight: bold;
+    color: #888;
+    z-index: 2;
+}
+
+.time-marker.top {
+    top: -20px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.time-marker.right {
+    top: 50%;
+    right: -35px;
+    transform: translateY(-50%);
+}
+
+.time-marker.bottom {
+    bottom: -20px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.time-marker.left {
+    top: 50%;
+    left: -35px;
+    transform: translateY(-50%);
+}
+
+.timers-container {
+    flex: 2;
+    min-width: 500px;
+}
+
+h2 {
+    text-align: center;
+    color: #333;
+    margin-bottom: 20px;
+}
+
+#timer-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+#timer-table th,
+#timer-table td {
+    padding: 12px;
+    text-align: center;
+}
+
+#timer-table th {
+    background-color: #f8f8f8;
+    font-weight: 600;
+}
+
+#timer-table input[type="text"],
+#timer-table input[type="color"] {
+    width: 80px;
+    padding: 6px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    text-align: center;
+    transition: border-color 0.2s;
+    background-color: #fff;
+}
+
+#timer-table input[type="text"]:focus,
+#timer-table input[type="color"]:focus {
+    border-color: #007aff;
+    outline: none;
+}
+
+#timer-table input[type="color"] {
+    width: 50px;
+    height: 30px;
+    padding: 2px;
+    cursor: pointer;
+    border: none;
+}
+
+.delete-btn {
+    background: #ff3b30;
+    color: white;
+    border: none;
+    padding: 6px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.delete-btn:hover {
+    background: #c7001e;
+}
+
+#add-timer-btn {
+    display: block;
+    width: 100%;
+    padding: 12px;
+    background: #007aff;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    cursor: pointer;
+    margin-top: 20px;
+    transition: background-color 0.2s;
+}
+
+#add-timer-btn:hover {
+    background: #0056b3;
+}

@@ -11,58 +11,74 @@
 
 <body>
     <div id="container">
-        <a href="homepage.html"><img src="media/Logobgremove.png" , id="logooff"></a>
-        <h1>LIGHTS</h1>
+        <header>
+            <a href="homepage.html"><img src="media/Logobgremove.png" id="logooff" alt="Aquamaster Logo"></a>
+            <h1>LIGHTS</h1>
+        </header>
+
         <div id="containerin">
-            <h2>Brightness</h2>
-            <div id="colorWheelContainer">
-                <div id="colorWheel"></div>
-            </div>
 
-            <div id="colorPreviewContainer">
-                <div id="colorPreview"></div>
-            </div>
+            <div class="main-controls">
 
-            <div>
-                <label class="toggle-switch">
-                    <input type="checkbox" id="autoDaylightToggle">
-                    <span class="slider"></span>
-                </label>
-            </div>
+                <div class="left-column">
+                    <div id="colorWheelContainer">
+                        <div id="colorWheel"></div>
+                    </div>
+                    <div id="colorPreviewContainer">
+                        <div id="colorPreview"></div>
+                    </div>
+                </div>
 
-            <div id="brightnessControl">
-                <input type="range" id="brightnessSlider" min="0" max="255" value="255">
-            </div>
+                <div class="middle-column">
+                    <div class="controls-group">
+                        <h2>Brightness</h2>
+                        <div id="brightnessControl">
+                            <input type="range" id="brightnessSlider" min="0" max="255" value="255">
+                        </div>
+                    </div>
 
-            <div id="setButtonContainer">
-                <button id="setColorButton" onclick="applyColor()"><span></span>Set Color</button>
+                    <div class="controls-group">
+                        <h2>Auto Daylight</h2>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="autoDaylightToggle">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+
+                    <div id="setButtonContainer">
+                        <button id="setColorButton" onclick="applyColor()"><span></span>Set Color</button>
+                    </div>
+                </div>
+
             </div>
 
             <div id="presetButtons">
-                <button class="preset-button" id="presetGuest" onclick="setMode('Guest')"><img src="media/guest.png"
-                        class="buttonlogo"><span></span>
-                    <p>&nbsp&nbsp&nbspGuest</p>
-                </button><br>
-                <button class="preset-button" id="presetNight" onclick="setMode('Night')"><img src="media/night.png"
-                        class="buttonlogo"><span></span>&nbsp&nbsp&nbspNight</p>
-                </button><br>
-                <button class="preset-button" id="presetDay" onclick="setMode('Day')"><img src="media/day.png"
-                        class="buttonlogo"><span></span>
-                    <p>&nbsp&nbspDay</p>
-                </button><br>
-                <button class="preset-button" id="presetAesthetic" onclick="setMode('Aesthetic')"><img
-                        src="media/aesthetic.png" id="buttonlogo4"><span></span>
-                    <p>&nbsp&nbsp&nbspAesthetic</p>
-                </button><br>
-                <button class="preset-button" id="presetPlant" onclick="setMode('Plant')"><img src="media/plant.png"
-                        class="buttonlogo"><span></span>
-                    <p>&nbsp&nbsp&nbspPlant</p>
-                </button><br>
-                <button class="preset-button" id="presetPlantPlus" onclick="setMode('Plant+')"><img
-                        src="media/plantplus.png" class="buttonlogo"><span></span>
-                    <p>&nbsp&nbsp&nbsp&nbsp&nbspPlant+</p>
-                </button><br>
+                <button class="preset-button" onclick="setMode('Guest')">
+                    <img src="media/guest.png" class="buttonlogo" alt="Guest Mode">
+                    <p>Guest</p>
+                </button>
+                <button class="preset-button" onclick="setMode('Night')">
+                    <img src="media/night.png" class="buttonlogo" alt="Night Mode">
+                    <p>Night</p>
+                </button>
+                <button class="preset-button" onclick="setMode('Day')">
+                    <img src="media/day.png" class="buttonlogo" alt="Day Mode">
+                    <p>Day</p>
+                </button>
+                <button class="preset-button" onclick="setMode('Aesthetic')">
+                    <img src="media/aesthetic.png" class="buttonlogo" alt="Aesthetic Mode">
+                    <p>Aesthetic</p>
+                </button>
+                <button class="preset-button" onclick="setMode('Plant')">
+                    <img src="media/plant.png" class="buttonlogo" alt="Plant Mode">
+                    <p>Plant</p>
+                </button>
+                <button class="preset-button" onclick="setMode('Plant+')">
+                    <img src="media/plantplus.png" class="buttonlogo" alt="Plant+ Mode">
+                    <p>Plant+</p>
+                </button>
             </div>
+
         </div>
     </div>
     <script src="Lightsjs.js"></script>

@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="timercss.css">
+    <title>Light Timer Scheduler</title>
+</head>
+
+<body>
+    <div class="container">
+        <div class="clock-container">
+            <div class="clock">
+                <div class="time-marker top">00:00</div>
+                <div class="time-marker right">06:00</div>
+                <div class="time-marker bottom">12:00</div>
+                <div class="time-marker left">18:00</div>
+            </div>
+        </div>
+        <div class="timers-container">
+            <h2>Light Timers</h2>
+            <table id="timer-table">
+                <thead>
+                    <tr>
+                        <th>Color</th>
+                        <th>Fade In</th>
+                        <th>Peak Start</th>
+                        <th>Peak End</th>
+                        <th>Fade Out</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+            <button id="add-timer-btn">Add Timer</button>
+        </div>
+    </div>
+
+    <script src="timerjs.js"></script>
+</body>
+
+</html>

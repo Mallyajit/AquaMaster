@@ -1,66 +1,140 @@
+/* --- Global Styles & Body --- */
+
 * {
     margin: 0;
     padding: 0;
+    box-sizing: border-box;
+    /* Makes layout math easier */
 }
 
-#colorPreview {
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    border: 2px solid #ccc;
-    margin-top: 10px;
+body,
+html {
+    width: 100%;
+    height: 100%;
+    font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
 }
 
 #container {
     width: 100%;
-    height: 100%;
+    min-height: 100%;
+    /* Use min-height to allow content to expand */
     background-size: cover;
-    z-index: 0;
     background-position: center;
     background-image: radial-gradient(ellipse, rgba(0, 0, 0, 0.60), rgba(0, 0, 0, 0.85)), url("https://i.ibb.co/608fnwhW/background.jpg");
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
-#colorWheelContainer {
-    position: absolute;
-    top: 25%;
-    left: 5%;
+
+/* --- Header & Logo --- */
+
+header {
+    width: 100%;
+    text-align: center;
+    position: relative;
+    /* For positioning the logo relative to the header */
+    padding: 20px 0;
 }
+
+#logooff {
+    position: absolute;
+    top: 50%;
+    left: 20px;
+    transform: translateY(-50%);
+    height: 50px;
+    z-index: 2;
+}
+
+h1 {
+    font-size: 50px;
+    color: white;
+}
+
+
+/* --- Main Content Container --- */
 
 #containerin {
-    content: '';
-    height: 70%;
-    width: 60%;
+    width: 100%;
+    max-width: 1200px;
+    /* Max width for large desktops */
     background: rgba(255, 255, 255, 0.1);
-    position: absolute;
-    left: 20%;
-    top: 20%;
-    border-radius: 50px;
-    z-index: 1;
+    border-radius: 30px;
+    padding: 20px;
+    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    /* MOBILE: Stack preset buttons below main controls */
+    align-items: center;
+    gap: 30px;
+    /* Space between flex children */
 }
 
-#colorPreviewContainer {
-    position: absolute;
-    left: 15.6%;
-    top: 10%;
+.main-controls {
+    display: flex;
+    flex-direction: column;
+    /* MOBILE: Stack columns vertically */
+    align-items: center;
+    gap: 30px;
+    width: 100%;
 }
 
-#brightnessControl {
-    position: absolute;
-    left: 45%;
-    top: 30%;
+
+/* --- Control Columns --- */
+
+.left-column,
+.middle-column {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
 }
+
+.controls-group {
+    text-align: center;
+    color: white;
+}
+
+h2 {
+    font-size: 25px;
+    font-weight: 100;
+    margin-bottom: 10px;
+}
+
+
+/* --- Specific Controls (Color Wheel, Slider, etc.) --- */
+
+#colorPreview {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    border: 3px solid #ccc;
+    margin-top: 10px;
+}
+
+#brightnessControl input[type="range"] {
+    width: 200px;
+}
+
+
+/* --- Preset Buttons --- */
 
 #presetButtons {
-    position: absolute;
-    left: 77%;
-    top: 3%;
+    display: flex;
+    flex-wrap: wrap;
+    /* Allow buttons to wrap to the next line */
+    justify-content: center;
+    gap: 15px;
+    /* Space between buttons */
+    width: 100%;
 }
 
-.preset-button {
-    margin-top: 17%;
+.preset-button,
+#setColorButton {
     width: 170px;
     cursor: pointer;
-    padding: 7px 0;
+    padding: 10px;
     text-align: center;
     border-radius: 25px;
     border: 2px solid #079bf7;
@@ -68,94 +142,49 @@
     color: white;
     position: relative;
     overflow: hidden;
-    font-size: 23;
-    font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif
+    font-size: 20px;
+    display: flex;
+    /* Use flex to align icon and text */
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: background-color 0.3s;
 }
 
-#setColorButton {
-    position: absolute;
-    left: 45%;
-    top: 60%;
-    width: 100px;
-    width: 170px;
-    cursor: pointer;
-    padding: 7px 0;
-    text-align: center;
-    border-radius: 25px;
-    border: 2px solid #079bf7;
-    background: transparent;
-    color: white;
-    overflow: hidden;
-    font-size: 23;
-    font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif
+.preset-button p {
+    margin: 0;
 }
 
 .buttonlogo {
-    position: absolute;
-    top: 19%;
-    left: 20%;
-    width: 15%;
-    z-index: 1;
+    height: 20px;
+    /* Control size with height */
+    width: auto;
 }
 
-#buttonlogo4 {
-    position: absolute;
-    top: 19.5%;
-    left: 10%;
-    width: 15%;
-    z-index: 1;
-}
 
-span {
+/* Button Hover Effect */
+
+.preset-button span,
+#setColorButton span {
     background: #4ee8ed;
-    opacity: 50%;
+    opacity: 0.3;
     height: 100%;
     width: 0%;
     border-radius: 25px;
     position: absolute;
     left: 0;
     bottom: 0;
-    transition: 0.2s;
+    transition: 0.4s;
     z-index: -1;
 }
 
-button:hover span {
+.preset-button:hover span,
+#setColorButton:hover span {
     width: 100%;
 }
 
-h1 {
-    position: absolute;
-    width: 100%;
-    font-size: 50;
-    color: white;
-    top: 7%;
-    text-align: center;
-}
 
-h2 {
-    font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
-    position: absolute;
-    width: 100%;
-    font-size: 25;
-    color: white;
-    left: 1%;
-    top: 20%;
-    text-align: center;
-    font-weight: 100;
-}
-
-#logooff {
-    display: flex;
-    margin-top: 0;
-    position: absolute;
-    top: 4%;
-    left: 4%;
-    z-index: 2;
-    height: 9%;
-}
-
-
-/* Toggle Switch CSS */
+/* --- Toggle Switch (Your original, good CSS) --- */
 
 .toggle-switch {
     position: relative;
@@ -192,7 +221,6 @@ h2 {
     background-color: white;
     transition: transform 0.4s;
     border-radius: 50%;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 input:checked+.slider {
@@ -201,4 +229,38 @@ input:checked+.slider {
 
 input:checked+.slider::before {
     transform: translateX(26px);
+}
+
+
+/*
+=====================================================
+--- DESKTOP LAYOUT (for screens > 1024px) ---
+=====================================================
+*/
+
+@media (min-width: 1024px) {
+    #containerin {
+        flex-direction: row;
+        /* DESKTOP: Side-by-side layout */
+        align-items: flex-start;
+        /* Align to the top */
+        justify-content: space-between;
+    }
+    .main-controls {
+        flex-direction: row;
+        /* DESKTOP: Place columns next to each other */
+        align-items: flex-start;
+        gap: 50px;
+    }
+    #presetButtons {
+        flex-direction: column;
+        /* DESKTOP: Stack preset buttons vertically */
+        flex-shrink: 0;
+        /* Prevent this column from shrinking */
+        width: auto;
+    }
+    #logooff {
+        left: 40px;
+        height: 60px;
+    }
 }

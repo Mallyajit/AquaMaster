@@ -133,7 +133,7 @@ async function applyColor() {
         if (isAutoDaylightEnabled()) {
           applyColor();
         }
-      }, 10 * 1000);
+      }, 5 * 60 * 1000);
 
       window.addEventListener("beforeunload", () => {
         clearInterval(autoUpdateInterval);
