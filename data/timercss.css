@@ -25,64 +25,84 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    min-width: 280px;
+    min-width: 350px;
+    padding: 20px;
 }
 
+
+/* --- New Clock & Ring Styles --- */
+
 .clock {
+    position: relative;
     width: 250px;
     height: 250px;
     border-radius: 50%;
-    position: relative;
-    cursor: pointer;
     display: flex;
     justify-content: center;
     align-items: center;
-    background: #e9e9e9;
 }
 
-.clock::before {
-    content: '';
+
+/* Outermost Ring: Light Timer Preview */
+
+.light-preview-ring {
     position: absolute;
-    top: 25px;
-    left: 25px;
-    right: 25px;
-    bottom: 25px;
-    background: #fff;
+    width: 100%;
+    height: 100%;
     border-radius: 50%;
+    background: var(--light-gradient, #e9e9e9);
+    /* Default color */
     z-index: 1;
 }
 
-.time-marker {
+
+/* Middle Ring: CO2 Timer Preview */
+
+.co2-preview-ring {
     position: absolute;
-    font-size: 12px;
-    font-weight: bold;
-    color: #888;
+    width: calc(100% - 40px);
+    /* Make it smaller than the light ring */
+    height: calc(100% - 40px);
+    border-radius: 50%;
+    background: var(--co2-gradient, #e9e9e9);
+    /* Default color */
     z-index: 2;
 }
 
-.time-marker.top {
-    top: -20px;
-    left: 50%;
-    transform: translateX(-50%);
+
+/* Innermost Element: Clock Face for numbers */
+
+.clock-face {
+    position: relative;
+    width: calc(100% - 80px);
+    /* Make it smaller than the CO2 ring */
+    height: calc(100% - 80px);
+    border-radius: 50%;
+    background: #fff;
+    z-index: 3;
 }
 
-.time-marker.right {
-    top: 50%;
-    right: -35px;
-    transform: translateY(-50%);
+
+/* --- Hour Marker Styles --- */
+
+.hour-marker {
+    position: absolute;
+    font-size: 10px;
+    color: #333;
+    /* Position is set by JS */
+    transform: translate(-50%, -50%);
+    /* Center the text */
+    z-index: 4;
+    /* On top of everything */
 }
 
-.time-marker.bottom {
-    bottom: -20px;
-    left: 50%;
-    transform: translateX(-50%);
+.hour-marker.major {
+    font-weight: bold;
+    font-size: 12px;
 }
 
-.time-marker.left {
-    top: 50%;
-    left: -35px;
-    transform: translateY(-50%);
-}
+
+/* --- Table & Button Styles (Unchanged) --- */
 
 .timers-container {
     flex: 2;
@@ -95,24 +115,25 @@ h2 {
     margin-bottom: 20px;
 }
 
-#timer-table {
+table {
     width: 100%;
     border-collapse: collapse;
+    margin-bottom: 20px;
 }
 
-#timer-table th,
-#timer-table td {
+th,
+td {
     padding: 12px;
     text-align: center;
 }
 
-#timer-table th {
+th {
     background-color: #f8f8f8;
     font-weight: 600;
 }
 
-#timer-table input[type="text"],
-#timer-table input[type="color"] {
+input[type="text"],
+input[type="color"] {
     width: 80px;
     padding: 6px;
     border: 1px solid #ccc;
@@ -122,13 +143,13 @@ h2 {
     background-color: #fff;
 }
 
-#timer-table input[type="text"]:focus,
-#timer-table input[type="color"]:focus {
+input[type="text"]:focus,
+input[type="color"]:focus {
     border-color: #007aff;
     outline: none;
 }
 
-#timer-table input[type="color"] {
+input[type="color"] {
     width: 50px;
     height: 30px;
     padding: 2px;
@@ -150,11 +171,11 @@ h2 {
     background: #c7001e;
 }
 
-#add-timer-btn {
+#add-timer-btn,
+#add-co2-timer-btn {
     display: block;
     width: 100%;
     padding: 12px;
-    background: #007aff;
     color: white;
     border: none;
     border-radius: 8px;
@@ -164,6 +185,18 @@ h2 {
     transition: background-color 0.2s;
 }
 
+#add-timer-btn {
+    background: #007aff;
+}
+
 #add-timer-btn:hover {
     background: #0056b3;
+}
+
+#add-co2-timer-btn {
+    background: #28a745;
+}
+
+#add-co2-timer-btn:hover {
+    background: #218838;
 }

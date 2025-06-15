@@ -25,7 +25,7 @@ const int blueChannel = 2;
 
 String savedEmail = "";
 unsigned long lastCheckTime = 0;
-const unsigned long checkInterval = 10 * 1000; // 5 minutes
+const unsigned long checkInterval = 5 * 60 * 1000; // 5 minutes
 
 // Function to get the MIME type based on file extension
 String getContentType(String filename)

@@ -12,10 +12,10 @@
     <div class="container">
         <div class="clock-container">
             <div class="clock">
-                <div class="time-marker top">00:00</div>
-                <div class="time-marker right">06:00</div>
-                <div class="time-marker bottom">12:00</div>
-                <div class="time-marker left">18:00</div>
+                <div class="light-preview-ring"></div>
+                <div class="co2-preview-ring"></div>
+                <div class="clock-face">
+                </div>
             </div>
         </div>
         <div class="timers-container">
@@ -35,9 +35,22 @@
                 </tbody>
             </table>
             <button id="add-timer-btn">Add Timer</button>
+
+            <h2>CO2 Timers</h2>
+            <table id="co2-timer-table">
+                <thead>
+                    <tr>
+                        <th>Start Time</th>
+                        <th>End Time</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+            <button id="add-co2-timer-btn">Add CO2 Timer</button>
         </div>
     </div>
-
     <script src="timerjs.js"></script>
 </body>
 
