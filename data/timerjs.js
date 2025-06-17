@@ -194,23 +194,22 @@ document.addEventListener("DOMContentLoaded", () => {
   const addTimerRow = (data = null) => {
     const row = document.createElement("tr");
     row.innerHTML = `
-          <td><input type="color" value="${data ? data.color : "#ffd700"}"></td>
-          <td><input type="text" class="time-input" placeholder="HH:MM" value="${
-            data ? data.fadeIn : ""
-          }"></td>
-          <td><input type="text" class="time-input" placeholder="HH:MM" value="${
-            data ? data.peakStart : ""
-          }"></td>
-          <td><input type="text" class="time-input" placeholder="HH:MM" value="${
-            data ? data.peakEnd : ""
-          }"></td>
-          <td><input type="text" class="time-input" placeholder="HH:MM" value="${
-            data ? data.fadeOut : ""
-          }"></td>
-          <td><button class="delete-btn">✕</button></td>
-        `;
+      <td><input type="color" value="${data ? data.color : "#ffd700"}"></td>
+      <td><input type="text" class="time-input" placeholder="HH:MM" value="${
+        data ? data.fadeIn : ""
+      }"></td>
+      <td><input type="text" class="time-input" placeholder="HH:MM" value="${
+        data ? data.peakStart : ""
+      }"></td>
+      <td><input type="text" class="time-input" placeholder="HH:MM" value="${
+        data ? data.peakEnd : ""
+      }"></td>
+      <td><input type="text" class="time-input" placeholder="HH:MM" value="${
+        data ? data.fadeOut : ""
+      }"></td>
+      <td><button class="delete-btn">✕</button></td>
+    `;
     timerTableBody.appendChild(row);
-
     row.querySelector(".delete-btn").addEventListener("click", () => {
       row.remove();
       updateRingGradient();
@@ -345,9 +344,30 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 
+  let currentBackendAutoDaylightState = false; // Initialize; will be updated by loadAllSettings or a fetch
+
   const saveAllSettings = async () => {
     const token = localStorage.getItem("token");
     if (!token) return; // Don't save if not logged in
+
+    // --- IMPORTANT: Fetch current autoDaylight state from the server first ---
+    let autoDaylightFromBackend = false;
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/timers`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (response.ok) {
+        const data = await response.json();
+        autoDaylightFromBackend = data.autoDaylight;
+      }
+    } catch (error) {
+      console.error(
+        "Failed to fetch current autoDaylight state before saving:",
+        error
+      );
+      // If fetching fails, proceed with default or current UI state, log error
+    }
+    // --- End of fetch current autoDaylight state ---
 
     // 1. Gather Light Timer data
     const lightTimers = [];
@@ -372,17 +392,43 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     });
 
-    // 3. Construct the payload
+    // Determine the new autoDaylight state to send
+    let newAutoDaylightStateForSave = autoDaylightFromBackend; // Start with what's currently on the backend
+
+    const lightTimerCheckboxIsChecked =
+      document.getElementById("LightTimer").checked;
+
+    // --- Apply your specific logic here before constructing the final payload ---
+    if (lightTimerCheckboxIsChecked && autoDaylightFromBackend) {
+      // Condition: Light Timer is being turned ON AND Auto Daylight was TRUE on the backend
+      alert(
+        "Auto Daylight is being turned off because Light Timers are now active."
+      );
+      newAutoDaylightStateForSave = false; // Force autoDaylight to false for this save operation
+    }
+    console.log(
+      "Frontend Debug: Determined newAutoDaylightStateForSave:",
+      newAutoDaylightStateForSave
+    );
+
+    // 3. Construct the final payload for saving
     const settingsToSave = {
-      lightTimerEnabled: document.getElementById("LightTimer").checked,
+      lightTimerEnabled: lightTimerCheckboxIsChecked, // Use the actual state of the checkbox
       co2TimerEnabled: document.getElementById("CO2Timer").checked,
       lightTimers: lightTimers,
       co2Timers: co2Timers,
+      autoDaylight: newAutoDaylightStateForSave, // Include the potentially modified autoDaylight state
     };
+
+    console.log("Frontend Debug: Payload being sent:", settingsToSave);
 
     // 4. Send to server
     try {
-      await fetch(`${API_BASE_URL}/api/timers`, {
+      // The server-side /api/timers endpoint (POST) should handle the full payload,
+      // including autoDaylight. Make sure your server-side POST /api/timers is updated
+      // to receive and save 'autoDaylight' from the body.
+      // (The server.js code I provided in previous full code already does this).
+      const response = await fetch(`${API_BASE_URL}/api/timers`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -390,7 +436,19 @@ document.addEventListener("DOMContentLoaded", () => {
         },
         body: JSON.stringify(settingsToSave),
       });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
       console.log("Settings saved.");
+
+      // After a successful save, if autoDaylight was turned off,
+      // you might want to refresh the UI to reflect it immediately
+      // (though the logic handles it by implicitly setting it to false in the payload).
+      // If you had an autoDaylight checkbox in UI, you'd update it here:
+      // if (document.getElementById("AutoDaylightToggle")) {
+      //     document.getElementById("AutoDaylightToggle").checked = newAutoDaylightStateForSave;
+      // }
     } catch (error) {
       console.error("Failed to save settings:", error);
     }
@@ -421,19 +479,20 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // 2. Set toggle switches
       document.getElementById("LightTimer").checked =
-        !!settings.lightTimerEnabled;
-      document.getElementById("CO2Timer").checked = !!settings.co2TimerEnabled;
+        !!settings.timers.lightTimerEnabled;
+      document.getElementById("CO2Timer").checked =
+        !!settings.timers.co2TimerEnabled;
 
       // 3. Load Light Timers
-      if (settings.lightTimers) {
-        settings.lightTimers.forEach((timer) => {
+      if (settings.timers.lightTimers) {
+        settings.timers.lightTimers.forEach((timer) => {
           addTimerRow(timer); // Modify addTimerRow to accept data
         });
       }
 
       // 4. Load CO2 Timers
-      if (settings.co2Timers) {
-        settings.co2Timers.forEach((timer) => {
+      if (settings.timers.co2Timers) {
+        settings.timers.co2Timers.forEach((timer) => {
           addCo2TimerRow(timer); // Modify addCo2TimerRow to accept data
         });
       }

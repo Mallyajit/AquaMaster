@@ -53,7 +53,6 @@ document.addEventListener("DOMContentLoaded", () => {
       return res.json();
     })
     .then(({ r, g, b, brightness, autoDaylight }) => {
-      // ✨ CHANGED: Also get autoDaylight here
       if (r !== undefined && g !== undefined && b !== undefined) {
         colorPicker.color.rgb = { r, g, b };
         document.getElementById(
@@ -63,7 +62,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (brightness !== undefined) {
         document.getElementById("brightnessSlider").value = brightness;
       }
-      // ✨ CHANGED: Set toggle state from the same settings endpoint
+      //Set toggle state from the same settings endpoint
       const toggle = document.getElementById("autoDaylightToggle");
       if (toggle && typeof autoDaylight === "boolean") {
         toggle.checked = autoDaylight;
@@ -95,7 +94,12 @@ document.addEventListener("DOMContentLoaded", () => {
           if (!data.success) {
             console.error("❌ Failed to save autoDaylight state:", data);
           } else {
-            console.log("✅ AutoDaylight state saved:", toggle.checked);
+            console.log("✅ AutoDaylight state saved:", toggle.checked); // --- ADD THIS NEW LOGIC ---
+            if (data.lightTimerDisabledByAutoDaylight) {
+              alert(
+                "Auto Daylight is turned on, and Light Timers have been turned off."
+              );
+            } // --- END NEW LOGIC ---
           }
         })
         .catch((err) => {
