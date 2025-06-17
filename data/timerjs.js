@@ -1,4 +1,33 @@
+const API_BASE_URL = "http://192.168.1.22:3000";
+
 document.addEventListener("DOMContentLoaded", () => {
+  const checkAuth = async () => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      console.log("No token");
+      window.location.href = "login.html"; // Redirect if no token
+      return;
+    }
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/verify-token`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (!response.ok) {
+        window.location.href = "login.html"; // Redirect if token is invalid
+      } else {
+        console.log("Authentication successful.");
+        // If auth is successful, load the user's saved settings
+        loadAllSettings();
+      }
+    } catch (error) {
+      console.error("Auth check failed", error);
+      window.location.href = "login.html";
+    }
+  };
   // --- Variable Declarations ---
   const addTimerBtn = document.getElementById("add-timer-btn");
   const timerTableBody = document.querySelector("#timer-table tbody");
@@ -6,6 +35,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const co2TimerTableBody = document.querySelector("#co2-timer-table tbody");
   const clock = document.querySelector(".clock");
   let activeInput = null;
+
+  checkAuth();
 
   // --- Helper Functions ---
   const timeToMinutes = (timeStr) => {
@@ -19,7 +50,6 @@ document.addEventListener("DOMContentLoaded", () => {
     return (minutes / 1440) * 100;
   };
 
-  // --- ** COMPLETELY REWRITTEN AND DEBUGGED GRADIENT LOGIC ** ---
   const updateRingGradient = () => {
     const rows = timerTableBody.querySelectorAll("tr");
     const baseColor = "#e9e9e9";
@@ -117,8 +147,6 @@ document.addEventListener("DOMContentLoaded", () => {
     return `#${((1 << 24) | (r << 16) | (g << 8) | b).toString(16).slice(1)}`;
   };
 
-  // --- The rest of the file remains the same but is included for completeness ---
-
   const updateCo2Ring = () => {
     const rows = co2TimerTableBody.querySelectorAll("tr");
     const baseColor = "#e9e9e9";
@@ -163,21 +191,30 @@ document.addEventListener("DOMContentLoaded", () => {
     clock.style.setProperty("--co2-gradient", gradientString);
   };
 
-  const addTimerRow = () => {
+  const addTimerRow = (data = null) => {
     const row = document.createElement("tr");
     row.innerHTML = `
-          <td><input type="color" value="#ffd700"></td>
-          <td><input type="text" class="time-input" placeholder="HH:MM"></td>
-          <td><input type="text" class="time-input" placeholder="HH:MM"></td>
-          <td><input type="text" class="time-input" placeholder="HH:MM"></td>
-          <td><input type="text" class="time-input" placeholder="HH:MM"></td>
+          <td><input type="color" value="${data ? data.color : "#ffd700"}"></td>
+          <td><input type="text" class="time-input" placeholder="HH:MM" value="${
+            data ? data.fadeIn : ""
+          }"></td>
+          <td><input type="text" class="time-input" placeholder="HH:MM" value="${
+            data ? data.peakStart : ""
+          }"></td>
+          <td><input type="text" class="time-input" placeholder="HH:MM" value="${
+            data ? data.peakEnd : ""
+          }"></td>
+          <td><input type="text" class="time-input" placeholder="HH:MM" value="${
+            data ? data.fadeOut : ""
+          }"></td>
           <td><button class="delete-btn">✕</button></td>
-      `;
+        `;
     timerTableBody.appendChild(row);
 
     row.querySelector(".delete-btn").addEventListener("click", () => {
       row.remove();
       updateRingGradient();
+      saveAllSettings();
     });
 
     row.querySelectorAll("input").forEach((input) => {
@@ -187,35 +224,42 @@ document.addEventListener("DOMContentLoaded", () => {
           input.value = "";
         }
         updateRingGradient();
+        saveAllSettings();
       });
       if (input.classList.contains("time-input")) {
         input.addEventListener("focus", (e) => (activeInput = e.target));
       }
     });
-    updateRingGradient();
   };
 
-  const addCo2TimerRow = () => {
+  const addCo2TimerRow = (data = null) => {
     const row = document.createElement("tr");
     row.innerHTML = `
-          <td><input type="text" class="time-input" placeholder="HH:MM"></td>
-          <td><input type="text" class="time-input" placeholder="HH:MM"></td>
-          <td><button class="delete-btn">✕</button></td>
+          <td><input type="text" class="time-input" placeholder="HH:MM" value="${
+            data ? data.startTime : ""
+          }"></td>
+        <td><input type="text" class="time-input" placeholder="HH:MM" value="${
+          data ? data.endTime : ""
+        }"></td>
+        <td><button class="delete-btn">✕</button></td>
       `;
     co2TimerTableBody.appendChild(row);
 
     row.querySelector(".delete-btn").addEventListener("click", () => {
       row.remove();
       updateCo2Ring();
+      saveAllSettings();
     });
 
     row.querySelectorAll("input").forEach((input) => {
-      input.addEventListener("change", () => updateCo2Ring());
+      input.addEventListener("change", () => {
+        updateCo2Ring();
+        saveAllSettings(); // <-- SAVE on change
+      });
       if (input.classList.contains("time-input")) {
         input.addEventListener("focus", (e) => (activeInput = e.target));
       }
     });
-    updateCo2Ring();
   };
 
   const hasOverlap = (currentRow) => {
@@ -301,10 +345,116 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 
-  addTimerBtn.addEventListener("click", addTimerRow);
-  addCo2TimerBtn.addEventListener("click", addCo2TimerRow);
+  const saveAllSettings = async () => {
+    const token = localStorage.getItem("token");
+    if (!token) return; // Don't save if not logged in
 
-  addTimerRow();
-  addCo2TimerRow();
+    // 1. Gather Light Timer data
+    const lightTimers = [];
+    document.querySelectorAll("#timer-table tbody tr").forEach((row) => {
+      const inputs = row.querySelectorAll("input");
+      lightTimers.push({
+        color: inputs[0].value,
+        fadeIn: inputs[1].value,
+        peakStart: inputs[2].value,
+        peakEnd: inputs[3].value,
+        fadeOut: inputs[4].value,
+      });
+    });
+
+    // 2. Gather CO2 Timer data
+    const co2Timers = [];
+    document.querySelectorAll("#co2-timer-table tbody tr").forEach((row) => {
+      const inputs = row.querySelectorAll("input");
+      co2Timers.push({
+        startTime: inputs[0].value,
+        endTime: inputs[1].value,
+      });
+    });
+
+    // 3. Construct the payload
+    const settingsToSave = {
+      lightTimerEnabled: document.getElementById("LightTimer").checked,
+      co2TimerEnabled: document.getElementById("CO2Timer").checked,
+      lightTimers: lightTimers,
+      co2Timers: co2Timers,
+    };
+
+    // 4. Send to server
+    try {
+      await fetch(`${API_BASE_URL}/api/timers`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(settingsToSave),
+      });
+      console.log("Settings saved.");
+    } catch (error) {
+      console.error("Failed to save settings:", error);
+    }
+  };
+
+  // --- **NEW** - Function to Load All Settings ---
+  const loadAllSettings = async () => {
+    const token = localStorage.getItem("token");
+    if (!token) return;
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/timers`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const settings = await response.json();
+
+      if (Object.keys(settings).length === 0) {
+        console.log("No saved settings found, using defaults.");
+        // Keep the default rows added at the bottom of the script
+        updateRingGradient();
+        updateCo2Ring();
+        return;
+      }
+
+      // 1. Clear default rows
+      timerTableBody.innerHTML = "";
+      co2TimerTableBody.innerHTML = "";
+
+      // 2. Set toggle switches
+      document.getElementById("LightTimer").checked =
+        !!settings.lightTimerEnabled;
+      document.getElementById("CO2Timer").checked = !!settings.co2TimerEnabled;
+
+      // 3. Load Light Timers
+      if (settings.lightTimers) {
+        settings.lightTimers.forEach((timer) => {
+          addTimerRow(timer); // Modify addTimerRow to accept data
+        });
+      }
+
+      // 4. Load CO2 Timers
+      if (settings.co2Timers) {
+        settings.co2Timers.forEach((timer) => {
+          addCo2TimerRow(timer); // Modify addCo2TimerRow to accept data
+        });
+      }
+
+      // 5. Update visuals
+      updateRingGradient();
+      updateCo2Ring();
+    } catch (error) {
+      console.error("Failed to load settings:", error);
+    }
+  };
+
+  addTimerBtn.addEventListener("click", () => {
+    addTimerRow();
+    saveAllSettings();
+  });
+
+  addCo2TimerBtn.addEventListener("click", () => {
+    addCo2TimerRow();
+    saveAllSettings();
+  });
+
   createHourMarkers();
 });
