@@ -18,23 +18,6 @@ document.addEventListener("DOMContentLoaded", () => {
     return;
   }
 
-  // ✨ ADDED: Get user email from token and inform the ESP32
-  const { email } = parseJwt(token);
-  if (email) {
-    fetch(`${ESP32_IP}/save-email`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email }),
-    })
-      .then((res) => {
-        if (res.ok) console.log("✅ Email sent to ESP32 successfully.");
-        else console.error("❌ Failed to send email to ESP32.");
-      })
-      .catch((err) =>
-        console.error("❌ Network error sending email to ESP32:", err)
-      );
-  }
-
   // 1. Load saved light settings
   fetch(`${NODE_JS_BACKEND_URL}/settings`, {
     method: "GET",
@@ -117,12 +100,17 @@ function isAutoDaylightEnabled() {
 
 // Apply color logic (unchanged)
 async function applyColor() {
+  const email = localStorage.getItem("userEmail");
   const brightness = parseInt(
     document.getElementById("brightnessSlider").value
   );
   if (isAutoDaylightEnabled()) {
     try {
-      const response = await fetch(`${NODE_JS_BACKEND_URL}/api/auto-light`);
+      const response = await fetch(
+        `${NODE_JS_BACKEND_URL}/api/auto-light?email=${encodeURIComponent(
+          email
+        )}`
+      );
       if (!response.ok) throw new Error("Failed to get auto-light color");
       const { r, g, b } = await response.json();
 

@@ -25,7 +25,7 @@ const int blueChannel = 2;
 
 String savedEmail = "";
 unsigned long lastCheckTime = 0;
-const unsigned long checkInterval = 5 * 60 * 1000; // 5 minutes
+const unsigned long checkInterval = 10 * 1000; // 5 minutes
 
 // Function to get the MIME type based on file extension
 String getContentType(String filename)
@@ -182,7 +182,7 @@ void handleSetColor()
 void applyAutoLightColor()
 {
   HTTPClient http;
-  String serverUrl = "http://192.168.1.22:3000/api/auto-light";
+  String serverUrl = "http://192.168.1.22:3000/api/auto-light?email=" + savedEmail;
   http.begin(serverUrl);
 
   Serial.println("🔆 Fetching auto-daylight color from backend...");
@@ -191,7 +191,7 @@ void applyAutoLightColor()
   if (httpResponseCode > 0)
   {
     String payload = http.getString();
-    Serial.println("🎨 Auto-light response: " + payload);
+    Serial.println("🎨 Auto-light response: ");
 
     // Basic JSON parsing (same as your handleSetColor)
     int rIndex = payload.indexOf("\"r\":");
@@ -244,7 +244,7 @@ void checkAutoDaylightStatus()
   if (httpResponseCode > 0)
   {
     String response = http.getString();
-    Serial.println("🔁 Auto-daylight status response: " + response);
+    Serial.println("🔁 Auto-daylight status response: "); // use response after debugging complete
 
     // ✨ CHANGED: If true, call the function to get and set the color
     if (response.indexOf("\"autoDaylight\":true") != -1)
@@ -265,6 +265,64 @@ void checkAutoDaylightStatus()
 
   http.end();
 }
+
+bool applyLightTimerColor()
+{
+  HTTPClient http;
+  String url = "http://192.168.1.22:3000/api/light-timer-color?email=" + savedEmail;
+
+  http.begin(url);
+
+  int httpCode = http.GET();
+  bool colorApplied = false;
+
+  if (httpCode > 0)
+  {
+    String payload = http.getString();
+    Serial.println("💡 Light timer color response: " + payload);
+
+    if (payload.indexOf("null") == -1)
+    {
+      int rIndex = payload.indexOf("\"r\":");
+      int gIndex = payload.indexOf("\"g\":");
+      int bIndex = payload.indexOf("\"b\":");
+
+      if (rIndex != -1 && gIndex != -1 && bIndex != -1)
+      {
+        int rComma = payload.indexOf(",", rIndex);
+        if (rComma == -1)
+          rComma = payload.indexOf("}", rIndex);
+        int gComma = payload.indexOf(",", gIndex);
+        if (gComma == -1)
+          gComma = payload.indexOf("}", gIndex);
+        int bEnd = payload.indexOf("}", bIndex);
+
+        int red = payload.substring(rIndex + 4, rComma).toInt();
+        int green = payload.substring(gIndex + 4, gComma).toInt();
+        int blue = payload.substring(bIndex + 4, bEnd).toInt();
+
+        Serial.printf("🌈 Applying timer color -> R:%d, G:%d, B:%d\n", red, green, blue);
+        ledcWrite(redChannel, red);
+        ledcWrite(greenChannel, green);
+        ledcWrite(blueChannel, blue);
+        colorApplied = true;
+      }
+    }
+    else
+    {
+      Serial.println("🔕 Timer inactive or no color to apply.");
+    }
+  }
+  else
+  {
+    Serial.print("❌ Failed to fetch timer color: ");
+    Serial.println(http.errorToString(httpCode).c_str());
+  }
+
+  http.end();
+  return colorApplied;
+}
+
 void setup()
 {
   Serial.begin(115200);
@@ -365,6 +423,17 @@ void loop()
   if (currentMillis - lastCheckTime >= checkInterval)
   {
     lastCheckTime = currentMillis;
-    checkAutoDaylightStatus();
+
+    if (savedEmail == "")
+    {
+      Serial.println("⚠️ No email saved. Skipping checks.");
+      return;
+    }
+    bool timerAppliedColor = applyLightTimerColor();
+
+    if (!timerAppliedColor)
+    {
+      checkAutoDaylightStatus();
+    }
   }
 }
